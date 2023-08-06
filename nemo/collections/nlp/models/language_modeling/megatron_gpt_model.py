@@ -313,10 +313,9 @@ class MegatronGPTModel(MegatronBaseModel, TextGeneration):
         """Model depends on pipeline paralellism."""
 
         encoder_attn_mask_type_cfg = self.cfg.get('encoder_attn_mask_type', None)
-        encoder_attn_mask_type = {
-            'causal':  AttnMaskType.causal,
-            'padding': AttnMaskType.padding
-        }.get(encoder_attn_mask_type_cfg, AttnMaskType.causal)
+        encoder_attn_mask_type = {'causal': AttnMaskType.causal, 'padding': AttnMaskType.padding}.get(
+            encoder_attn_mask_type_cfg, AttnMaskType.causal
+        )
 
         model = GPTModel(
             vocab_size=self.cfg.get('override_vocab_size', self.padded_vocab_size),
