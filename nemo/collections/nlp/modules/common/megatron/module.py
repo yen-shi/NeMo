@@ -262,13 +262,13 @@ class Float16Module(MegatronModule):
         super().__init__(share_token_embeddings=share_token_embeddings)
         self.precision = precision
 
-        if precision == 'bf16':
+        if precision == 'bf16' or precision == 'bf16-mixed':
             self.add_module('module', module.bfloat16())
 
             def float16_converter(val):
                 return val.bfloat16()
 
-        elif int(precision) == 16:
+        elif precision == '16' or precision == '16-mixed':
             self.add_module('module', module.half())
 
             def float16_converter(val):
@@ -277,7 +277,7 @@ class Float16Module(MegatronModule):
         else:
             raise Exception(
                 f'precision {precision} is not supported. Float16Module (megatron_amp_O2) supports '
-                'only fp16 and bf16.'
+                'only fp16, bf16, fp16-mixed, or bf16-mixed.'
             )
 
         self.float16_converter = float16_converter

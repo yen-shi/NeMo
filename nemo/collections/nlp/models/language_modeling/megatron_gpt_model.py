@@ -61,6 +61,7 @@ from nemo.utils import logging
 try:
     import apex.transformer.pipeline_parallel.utils
     from apex.transformer.pipeline_parallel.utils import get_num_microbatches
+    from apex.transformer.enums import AttnMaskType
 
     HAVE_APEX = True
 
@@ -109,12 +110,12 @@ class MegatronGPTExportableModel(torch.nn.Module, Exportable):
             )
 
         self.dtype = None
-        if model.cfg['precision'] == 'bf16':
+        if model.cfg['precision'] == 'bf16' or model.cfg['precision'] == 'bf16-mixed':
             self.dtype = torch.bfloat16
+        elif model.cfg['precision'] == '16-mixed' or int(model.cfg['precision']) == 16:
+            self.dtype = torch.float16
         elif int(model.cfg['precision']) == 32:
             self.dtype = torch.float
-        elif int(model.cfg['precision']) == 16:
-            self.dtype = torch.float16
         else:
             raise ValueError(f"precision: {model.cfg['precision']} is not supported.")
 
@@ -316,6 +317,8 @@ class MegatronGPTModel(MegatronBaseModel, TextGeneration):
         encoder_attn_mask_type = {'causal': AttnMaskType.causal, 'padding': AttnMaskType.padding}.get(
             encoder_attn_mask_type_cfg, AttnMaskType.causal
         )
+
+        print(f"Loading GPTModel with encoder_attn_mask_type {encoder_attn_mask_type }")
 
         model = GPTModel(
             vocab_size=self.cfg.get('override_vocab_size', self.padded_vocab_size),
